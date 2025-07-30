@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Cloner le dépôt') {
             steps {
-                git url: 'https://github.com/utilisateur/ton-projet.git', branch: 'main'
+                git url: 'git 'https://github.com/Binetuuu/crud-app.git'', branch: 'main'
             }
         }
 
