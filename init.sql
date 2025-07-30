@@ -1,0 +1,6 @@
+USE crud_db;
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nom VARCHAR(255),
+  email VARCHAR(255)
+);
