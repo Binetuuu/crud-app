@@ -4,35 +4,31 @@ pipeline {
     stages {
         stage('Cloner le dépôt') {
             steps {
-                git url: 'git 'https://github.com/Binetuuu/crud-app.git'', branch: 'main'
+                git 'https://github.com/Binetuuu/crud-app.git'
             }
         }
 
         stage('Vérifier la syntaxe PHP') {
             steps {
-                echo "Vérification syntaxe avec php -l"
-                sh 'find src/ -name "*.php" -exec php -l {} \\;'
+                sh 'php -l index.php'
+                sh 'php -l create.php'
+                sh 'php -l update.php'
+                sh 'php -l delete.php'
+                sh 'php -l config.php'
             }
         }
 
-        stage('Tests unitaires (si tu en as)') {
+        stage('Construire avec Docker') {
             steps {
-                echo "Lancer PHPUnit si disponible"
-                sh 'vendor/bin/phpunit tests' // seulement si tu as PHPUnit installé
+                sh 'docker compose build'
             }
         }
 
-        stage('Build Docker') {
+        stage('Déployer ou lancer les containers') {
             steps {
-                sh 'docker-compose down'
-                sh 'docker-compose build'
-            }
-        }
-
-        stage('Déploiement') {
-            steps {
-                sh 'docker-compose up -d'
+                sh 'docker compose up -d'
             }
         }
     }
 }
+
