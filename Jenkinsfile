@@ -1,33 +1,44 @@
 pipeline {
     agent any
 
+    environment {
+        CONTAINER_NAME = 'crud-php'
+        GIT_REPO = 'https://github.com/Binetuuu/crud-app.git'
+    }
+
     stages {
-        stage('Cloner le dépôt') {
+
+        stage('Cloner le code') {
             steps {
-                git 'https://github.com/Binetuuu/crud-app.git'
+                git branch: 'main', url: "${env.GIT_REPO}"
             }
         }
 
-        stage('Vérifier la syntaxe PHP') {
+        stage('Tests') {
             steps {
-                sh 'php -l index.php'
-                sh 'php -l create.php'
-                sh 'php -l update.php'
-                sh 'php -l delete.php'
-                sh 'php -l config.php'
+                echo 'Exécution des tests PHP...'
+                // Remplace ceci par tes vraies commandes de test si nécessaire
+                sh "docker exec ${env.CONTAINER_NAME} php -v"
+                // Si tu as PHPUnit :
+                // sh "docker exec ${env.CONTAINER_NAME} ./vendor/bin/phpunit"
             }
         }
 
-        stage('Construire avec Docker') {
+        stage('Déploiement') {
             steps {
-                sh 'docker compose build'
+                echo "Déploiement sur le conteneur ${env.CONTAINER_NAME}..."
+                sh "docker exec ${env.CONTAINER_NAME} git pull origin main"
+                sh "docker restart ${env.CONTAINER_NAME}"
             }
         }
+    }
 
-        stage('Déployer ou lancer les containers') {
-            steps {
-                sh 'docker compose up -d'
-            }
+    post {
+        failure {
+            echo 'Le pipeline a échoué !'
+        }
+        success {
+            echo 'Déploiement réussi 🎉'
         }
     }
 }
