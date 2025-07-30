@@ -1,11 +1,13 @@
-# Utilise une image officielle PHP avec Apache
 FROM php:8.2-apache
 
-# Copie le code de l'application dans le dossier web d'Apache
-COPY ./src /var/www/html/
+# Installer git et d'autres dépendances utiles
+RUN apt-get update && \
+    apt-get install -y git unzip && \
+    docker-php-ext-install mysqli pdo pdo_mysql && \
+    apt-get clean
 
-# Active les extensions PHP nécessaires pour MySQL
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+# Copier les fichiers de l'application
+COPY . /var/www/html
 
-# Donne les droits à Apache
-RUN chown -R www-data:www-data /var/www/html
+EXPOSE 80
+
