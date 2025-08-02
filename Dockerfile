@@ -8,7 +8,7 @@ RUN apt-get update && \
     apt-get clean
 
 # Copier les fichiers PHP dans le conteneur
-COPY . /var/www/html
+COPY src/ /var/www/html
 
 # Donner les bons droits
 RUN chown -R www-data:www-data /var/www/html
