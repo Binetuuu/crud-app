@@ -13,7 +13,7 @@ services:
 
   db:
     image: mysql:5.7
-    container_name: crud-mysql
+    container_name: db
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
