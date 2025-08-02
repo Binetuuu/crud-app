@@ -1,64 +1,63 @@
 pipeline {
-    agent any  // Jenkins peut exécuter ce pipeline sur n'importe quel agent
+  agent any
 
-    environment {
-        // On donne des noms aux conteneurs pour les réutiliser plus bas
-        APP_CONTAINER = "crud-php"
-        MYSQL_CONTAINER = "crud-mysql"
-        PHPMYADMIN_CONTAINER = "crud-phpmyadmin"
+  environment {
+    COMPOSE_PROJECT_NAME = "crud-app"
+  }
+
+  stages {
+
+    stage('Vérification Docker') {
+      steps {
+        echo 'Vérification de l\'installation de Docker...'
+        sh 'docker --version'
+        sh 'docker-compose --version || echo "Docker Compose non trouvé (ignorable si installé autrement)"'
+      }
     }
 
-    stages {
-        stage('Vérification Docker') {
-            steps {
-                echo "🔍 Vérification que Docker est installé..."
-                sh 'docker --version'
-            }
-        }
-
-        stage('Cloner le code') {
-            steps {
-                // Clonage du code source depuis ton dépôt GitHub
-                git url: 'https://github.com/Binetuuu/crud-app.git', branch: 'main'
-            }
-        }
-
-        stage('Tests') {
-            steps {
-                echo "✅ Lancement des tests PHP..."
-                // Teste la syntaxe du fichier index.php dans le conteneur crud-php
-                sh "docker exec ${APP_CONTAINER} php -l /var/www/html/index.php"
-            }
-        }
-
-        stage('Déploiement') {
-            steps {
-                echo "🚀 Déploiement avec Docker Compose..."
-
-                sh '''
-                    # 🔄 On arrête les anciens conteneurs s’ils existent
-                    docker-compose down || true
-
-                    # 🧹 On supprime les conteneurs existants pour éviter le conflit
-                    docker rm -f crud-php crud-mysql crud-phpmyadmin || true
-
-                    # 🔨 On reconstruit les images
-                    docker-compose build
-
-                    # ▶️ On relance tous les services
-                    docker-compose up -d
-                '''
-            }
-        }
+    stage('Tests') {
+      steps {
+        echo 'Exécution des tests PHP sur tous les fichiers...'
+        sh '''
+          for file in src/*.php; do
+            echo "Test de syntaxe : $file"
+            php -l "$file" || exit 1
+          done
+        '''
+      }
     }
 
-    post {
-        success {
-            echo "✅ Le pipeline s'est terminé avec succès."
-        }
-        failure {
-            echo "❌ Le pipeline a échoué."
-        }
+    stage('Nettoyage des anciens conteneurs') {
+      steps {
+        echo 'Suppression des anciens conteneurs Docker...'
+        sh '''
+          docker rm -f crud-php crud-mysql crud-phpmyadmin 2>/dev/null || true
+        '''
+      }
     }
+
+    stage('Build') {
+      steps {
+        echo 'Reconstruction des images Docker...'
+        sh 'docker-compose build'
+      }
+    }
+
+    stage('Déploiement') {
+      steps {
+        echo 'Démarrage de l\'application avec Docker Compose...'
+        sh 'docker-compose up -d'
+      }
+    }
+  }
+
+  post {
+    failure {
+      echo '❌ Le pipeline a échoué.'
+    }
+    success {
+      echo '✅ Pipeline terminé avec succès.'
+    }
+  }
 }
 
