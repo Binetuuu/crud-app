@@ -8,6 +8,13 @@ pipeline {
             }
         }
 
+        stage('Vérification Docker') {
+            steps {
+                echo 'Vérification de l\'installation de Docker...'
+                sh 'docker --version'
+            }
+        }
+
         stage('Tests') {
             steps {
                 echo 'Exécution des tests PHP...'
@@ -34,4 +41,3 @@ pipeline {
         }
     }
 }
-
